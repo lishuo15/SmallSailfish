@@ -1,6 +1,7 @@
 # My horrible debugging
 *.txt
 *.tgz
+*.sf
 
 
 # Byte-compiled / optimized / DLL files
