@@ -1,4 +1,4 @@
-K = 3
+K = 25
 transcripts = [] 
 read = []
 
@@ -9,14 +9,11 @@ def read_input() :
   read.txt : the read.  
   in read and transcripts, only ACGT characters are considered, other characters are ignored
   """
-  global K, transcripts, read
   K = int (open('parameters.txt', 'r').read())
   raw = filter(lambda x : x in ['A','C','G','T', '\n'], open('transcripts.txt','r').read())
   transcripts = filter(lambda x : len(x) > 0, raw.split('\n'))
   read = filter(lambda x : x in ['A', 'C', 'G', 'T'], open('read.txt'))
 
-def build_index() :
-  global K, transcripts, read
   all_kmers = set()
   for line in transcripts  :
     kmers = set([line[i:i+K] for i in range(len(line) - K + 1)])
@@ -54,21 +51,25 @@ def init_mu() :
 def EMstep(mu1) :
   alpha = step_get_alpha(mu1)
   return step_get_mu1(alpha)
+
+def norm(vec) :
+  s = sum(map(lambda x : x * x, vec))
+  return sqrt(s)
   
 def SQUAREMstep(u0) :
   u1 = EMstep(u0)
   u2 = EMstep(u1)
   r = [a1-a0 for a1, a0 in zip(u1,u0)]
-  v = [a2-a1-rr for a2, a1,  rr in  zip(u2,u1,r)] ## fix later
-  gamma = -norm(r) / norm(v) ## fix later
-  gamma = modify(gamma) # fix later
-  u3 = 0 # i need to confirm what this max is about
+  v = [a2-a1-rr for a2, a1,  rr in  zip(u2,u1,r)] 
+  gamma = -norm(r) / norm(v)
+  #gamma = modify(gamma) ;; currently no such step
+  u3 = [0.0] * len(u1)
   return EMstep(u3)
 
-def run_EM() :
-  u1 = init_mu()
-  while not converge() : # fix later
-    SQUAREMstep(u1)
+def run_EM(u1) :
+  for i in range(10000) : # limited iterations
+    u1 = SQUAREMstep(u1)
+  return u1
 
 def output() :
   global mu, mu1
